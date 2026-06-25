@@ -1,0 +1,2 @@
+
+screen -dmS $experiment.simulation.manager ./simulation.pangolin.sh

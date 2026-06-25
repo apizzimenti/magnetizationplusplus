@@ -1,0 +1,33 @@
+# Run some default number of copies.
+COPIES=${1:-1}
+SCALES=(3 4 6 8 11 16 23)
+TOPDIMENSION=4
+PLAQUETTEDIMENSION=2
+
+rm -f current.timestamps.txt
+
+for SCALE in "${SCALES[@]}"; do
+	for ((i=0; i < $COPIES; i++)); do
+		# Get the current timestamp (number of seconds since the epoch), make a
+		# directory for the output, write the timestamp to timestamps.txt
+		rn=$(date +%s)
+		mkdir -p output/tape/$rn
+		echo $rn >> current.timestamps.txt
+
+		# Kick off a screen job, but WAIT UNTIL IT COMPLETES before starting a
+		# new one, since there aren't a sufficient number of threads to accommodate
+		# multiple jobs at once. (This should make things go faster.)
+		screen -L -Logfile output/tape/$rn/simulation.log -dmS $experiment.simulation.$rn ./simulate $SCALE $TOPDIMENSION $PLAQUETTEDIMENSION $rn
+
+		until [[ -f ./output/tape/$rn/metadata.json ]]; do
+			sleep 5
+		done
+
+		# Zip all the files in the directory.
+		for x in output/tape/$rn/*.txt; do
+			gzip --best $x
+		done
+
+		echo $rn >> completed.txt
+	done
+done

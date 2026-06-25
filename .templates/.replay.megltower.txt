@@ -1,0 +1,31 @@
+
+completed=completed.txt
+mkdir -p output/statistics
+
+# Provides arguments for the replay from file.
+while read -r l; do
+	# Make the stats directory if it doesn't already exist; run the job.
+	mkdir -p output/statistics/$l
+	screen -L -Logfile output/statistics/$l/replay.statistics.log -dmS $experiment.statistics.$l python replay.statistics.py $l
+done < $completed
+
+
+# Wait until ALL the processes have completed, then compute autocorrelations.
+setopt extended_glob
+setopt NULL_GLOB
+
+_completes=(output/statistics/**/metadata.json)
+completes=${#_completes[@]}
+k=$(grep -v '^$' $completed | wc -l)
+
+until [[ $completes -eq $k ]]; do
+	_completes=(output/statistics/**/metadata.json)
+	completes=${#_completes[@]}
+	k=$(grep -v '^$' $completed | wc -l)
+	sleep 1
+done
+
+while read -r l; do
+	# Compute autocorrelation; this shouldn't take too long.
+	screen -L -Logfile output/statistics/$l/replay.autocorrelation.log -dmS $experiment.autocorrelation.$l python replay.autocorrelation.py $l
+done < $completed

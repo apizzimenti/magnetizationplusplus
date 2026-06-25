@@ -1,0 +1,4 @@
+
+module load gnu10
+module load python
+export PYTHONPATH=~/lib/python:$PYTHONPATH

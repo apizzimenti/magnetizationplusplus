@@ -1,0 +1,2 @@
+
+screen -dmS $experiment.replay.manager ./replay.pangolin.sh

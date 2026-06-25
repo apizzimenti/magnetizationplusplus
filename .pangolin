@@ -1,0 +1,5 @@
+REMOTEUSER=anthony
+REMOTELOCATION=gmu-pangolin
+REMOTEHOST=pangolin
+USEREMAIL=apizzime
+REMOTEROOT="~/projects/magnetization++/experiments++"
