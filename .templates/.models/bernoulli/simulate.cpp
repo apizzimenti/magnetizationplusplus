@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 	auto start = chrono::high_resolution_clock::now();
 
 	for (models::BernoulliState* state : M.simulate<models::BernoulliState>()) {
-		occupancy[t] = (double)state->included.size()/(double)C.Cells[params.dimension];
+		occupancy[t] = (double)state->includes.size()/(double)C.Cells[params.dimension];
 		rank[t] = state->rank;
 		t++;
 
@@ -67,6 +67,13 @@ int main(int argc, char* argv[]) {
 	cout << endl;
 
 	auto end = chrono::high_resolution_clock::now();
+
+	// Write data to file FIRST, since the simulation manager looks for the
+	// metadata file before compressing; otherwise, the script errors, since
+	// the files are so big.
+	ATEAMS::DataWriter writer;
+	writer.write(occupancy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "occupancy"));
+	writer.write(rank, std::format("output/tape/{}/{}.txt", TIMESTAMP, "rank"));
 
 	// Add the parameters we care about to the metadata.
 	META.MODEL = G.kind;
@@ -78,12 +85,6 @@ int main(int argc, char* argv[]) {
 	// Localize the time; compute the time-to-completion; write to file.
 	META.ttc(start, end);
 	META.write(std::format("output/tape/{}/metadata.json", TIMESTAMP));
-
-	// Write data to file.
-	ATEAMS::DataWriter writer;
-
-	writer.write(occupancy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "occupancy"));
-	writer.write(rank, std::format("output/tape/{}/{}.txt", TIMESTAMP, "rank"));
 	
 	return 0;
 }

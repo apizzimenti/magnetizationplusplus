@@ -11,7 +11,7 @@ using namespace ATEAMS;
 using namespace std;
 
 // For ease-of-use.
-typedef statistics::Chain<models::SwendsenWang> Chain;
+typedef statistics::Chain<models::InvasionPercolation> Chain;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -34,31 +34,31 @@ int main(int argc, char* argv[]) {
 		META.localize(TIMESTAMP);
 		N = 10;
 	}
+	
 
 	// Construct a cubical complex.
 	vector<int> corners(TOPDIMENSION, SCALE);
 	complexes::Cubical C(corners, true);
 
 	// Parametrize + initialize the model.
-	models::SwendsenWangParameters params;
-	params.field = 3;
-	params.temperatureFunction = statistics::selfdual(params.field);
-	params.dimension = PLAQUETTEDIMENSION;
+	models::InvasionPercolationParameters params;
+	params.field = 2;
+	params.stoppingFunction = arithmetic::stopInvadingAt({3,4});
 
-	models::SwendsenWang PSW(&C, params);
+	models::InvasionPercolation G(&C, params);
 
 	// Create the chain and data storage buckets.
-	Chain M(&PSW, N);
+	Chain M(&G, N);
 
-	ZpMatrix spins(N, C.Cells[params.dimension-1]);
 	vector<float> occupancy(N);
+	vector<int> rank(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
-	for (models::SwendsenWangState* state : M.simulate<models::SwendsenWangState>()) {
-		spins.rows[t] = state->cochain;
-		occupancy[t] = (float)state->includes.size()/(float)C.Cells[params.dimension];
+	for (models::InvasionPercolationState* state : M.simulate<models::InvasionPercolationState>()) {
+		occupancy[t] = (double)state->includes.size()/(double)C.Cells[params.dimension];
+		rank[t] = state->rank;
 		t++;
 
 		// Fake a progress bar.
@@ -72,12 +72,13 @@ int main(int argc, char* argv[]) {
 	// metadata file before compressing; otherwise, the script errors, since
 	// the files are so big.
 	ATEAMS::DataWriter writer;
-	writer.write(spins, std::format("output/tape/{}/{}.txt", TIMESTAMP, "spins"));
+
 	writer.write(occupancy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "occupancy"));
+	writer.write(rank, std::format("output/tape/{}/{}.txt", TIMESTAMP, "rank"));
 
 	// Add the parameters we care about to the metadata.
-	META.MODEL = PSW.kind;
-	META.PARAMETERS["FIELD"] = params.field;
+	META.MODEL = G.kind;
+	META.PARAMETERS["DENSITY"] = params.p;
 	META.PARAMETERS["TOPDIMENSION"] = TOPDIMENSION;
 	META.PARAMETERS["PLAQUETTEDIMENSION"] = PLAQUETTEDIMENSION;
 	META.PARAMETERS["SCALE"] = SCALE;

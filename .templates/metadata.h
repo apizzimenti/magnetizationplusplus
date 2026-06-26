@@ -124,10 +124,10 @@ struct METADATA {
 
 	inline void write(std::string destination) {
 		std::ofstream out;
+		std::filesystem::path writable(destination);
 
-		if (!std::filesystem::exists(destination)) {
-			std::cerr << std::format("Couldn't find filepath {}, forcibly writing...", destination) << std::endl;
-			std::filesystem::path writable(destination);
+		if (!std::filesystem::exists(writable.parent_path())) {
+			std::cerr << std::format("Couldn't find filepath {}, forcibly writing...", writable.parent_path().string()) << std::endl;
 			std::filesystem::create_directory(writable.parent_path());
 		}
 

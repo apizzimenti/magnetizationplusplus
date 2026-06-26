@@ -68,6 +68,14 @@ int main(int argc, char* argv[]) {
 
 	auto end = chrono::high_resolution_clock::now();
 
+	// Write data to file FIRST, since the simulation manager looks for the
+	// metadata file before compressing; otherwise, the script errors, since
+	// the files are so big.
+	ATEAMS::DataWriter writer;
+
+	writer.write(spins, std::format("output/tape/{}/{}.txt", TIMESTAMP, "spins"));
+	writer.write(occupancy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "occupancy"));
+
 	// Add the parameters we care about to the metadata.
 	META.MODEL = IC.kind;
 	META.PARAMETERS["FIELD"] = params.field;
@@ -78,12 +86,6 @@ int main(int argc, char* argv[]) {
 	// Localize the time; compute the time-to-completion; write to file.
 	META.ttc(start, end);
 	META.write(std::format("output/tape/{}/metadata.json", TIMESTAMP));
-
-	// Write data to file.
-	ATEAMS::DataWriter writer;
-
-	writer.write(spins, std::format("output/tape/{}/{}.txt", TIMESTAMP, "spins"));
-	writer.write(occupancy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "occupancy"));
 	
 	return 0;
 }
