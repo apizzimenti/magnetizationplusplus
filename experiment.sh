@@ -108,6 +108,7 @@ cp $TEMPLATE/Makefile $directory/Makefile
 # echo "$hopper" >> $directory/simulation.hopper.sh
 # chmod +x $directory/simulation.hopper.sh
 
+zsheader="#!/bin/zsh\nexperiment=${experiment}\n\n"
 
 ###########################
 ## Simulation (Pangolin) ##
@@ -119,7 +120,6 @@ chmod +x $directory/simulation.pangolin.sh
 
 manager="$(cat $TEMPLATE/.simulation.manager.pangolin.txt)"
 manager="${zsheader}${manager}"
-# manager="${manager}\nscreen -dmS simulation.${experiment}.manager ./simulation.pangolin.sh"
 echo "$manager" >> $directory/simulation.manager.pangolin.sh
 chmod +x $directory/simulation.manager.pangolin.sh
 

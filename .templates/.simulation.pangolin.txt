@@ -26,6 +26,7 @@ for SCALE in "${SCALES[@]}"; do
 		# Zip all the files in the directory.
 		for x in output/tape/$rn/*.txt; do
 			gzip --best $x
+			wait $!
 		done
 
 		echo $rn >> completed.txt

@@ -45,7 +45,7 @@ Creating a streamlined workflow for designing and executing experiments using [A
 	This creates an `experiments++` directory (if it doesn't already exist) and an `experiments++/test` directory containing template files for conducting experiments with the `InvadedCluster` algorithm.
 
 4. **Test your experiment.**
-	1. **To test the simulation,** navigate to the `experiments++/test` directory and run the `make test` recipe, which builds the default `simulate.cpp` file and executes `./simulate 4 4 2 TEST`, which simulates a 10-sample Markov chain using the [plaquette invaded-cluster algorithm](https://arxiv.org/abs/2507.13503) on the $`2`$-subcomplexes of $\mathbb T^4_4$, the scale-$`4`$ four-torus. **If the last argument to `./simulate` is any nonnegative integer, it will perform a length-$`10^6`$ run. This is the default length.**
+	1. **To test the simulation,** navigate to the `experiments++/test` directory and run the `make test` recipe, which builds the default `simulate.cpp` file and executes `./simulate 4 4 2 TEST`, which simulates a 10-sample Markov chain using the [plaquette invaded-cluster algorithm](https://arxiv.org/abs/2507.13503) on the $`2`$-subcomplexes of $\mathbb T^4_4$, the scale-$`4`$ four-torus. **If the last argument to `./simulate` is any nonnegative integer, it will perform a length-$`10^6`$ run. This is the default length, and it can be changed in `simulate.cpp`.**
 	<!-- 2. **To test the replay and statistic-computation routines,** run the `replay.statistics.py` (and, if applicable, the `replay.autocorrelation.py`) script(s). Doing so creates the `output/statistics/TEST` directory, which includes an updated `metadata.json` and compressed statistical data. -->
 
 5. **Configure your experiment.** The `simulation.pangolin.sh` file executes (a configurable number of repetitions of) your experiment at varying lattice scales. At the top of the `simulation.pangolin.sh` file, you'll find the following variables:
@@ -57,7 +57,39 @@ Creating a streamlined workflow for designing and executing experiments using [A
 	PLAQUETTEDIMENSION=2		# dimension of sampled subcomplexes
 	```
 
-	Change these to suit your needs.
+	Change these to suit your needs. In the `simulate.cpp` file, you'll find a parametrization that looks like
+	
+	```c++
+	vector<int> corners(TOPDIMENSION, SCALE);	// creating a cubical complex
+	complexes::Cubical C(corners, true);
+
+	models::InvadedClusterParameters params;	// parametrizing the model
+	params.field = 2;
+	params.stoppingFunction = arithmetic::stopInvadingAt({3,4});
+	params.dimension = PLAQUETTEDIMENSION;
+	```
+
+	For more info on configuring each Model, [read the documentation](https://apizzimenti.github.io/ATEAMSplusplus/namespace_a_t_e_a_m_s_1_1models.html); each Model has a default set of parameters. **As of now, most Models fail silently; if you forget a parameter that does not have a default value, the Model will not warn you.**
+
+	At each iteration of the Markov chain, the Model will update a member called `state`, to which the Chain gives you pointer access. Each Model has its own state (e.g. `models::InvadedClusterState`) containing the data admitted at the most recent iteration of the Markov chain. [The docs have information on what data is tracked by the state object](https://apizzimenti.github.io/ATEAMSplusplus/namespace_a_t_e_a_m_s_1_1models.html). However, the Chain does _not_ store the data for you: you'll have to keep track of it yourself. For example, the invaded-cluster model keeps track of the current cochain (spin configuration) and the indices of $`d`$-cells included in the current subcomplex in the `cochain` and `includes` properties, respectively. The default strategy for storing these data is to either keep them in a sparse/compressed format (e.g. a `ZpMatrix` for storing cochains of type `ZpVector`), or to transform them and store a smaller representation:
+
+	```c++
+	ZpMatrix spins(N, C.Cells[params.dimension-1]);
+	vector<float> occupancy(N);
+	int t=0;
+
+	using State = models::InvadedClusterState;
+
+	for (State* state : M.simulate<State>()) {
+		...
+
+		spins.rows[t] = state->cochain;	// keep the same type
+		occupancy[t] = (float)state->includes.size()/(float)C.Cells[params.dimension]; // transform!
+		t++;
+
+		...
+	}
+	```
 
 6. **Run your experiment.** Though you *can* execute all the steps below on your own machine, the workflow is designed for you to set-and-forget your simulations on a remote machine.
 	1. **Upload the experiment to Pangolin/MEGLtower.** (If required — as it is for GMU remote computing resources — connect to the VPN.) In the `experiments++/test` directory, run `./update.sh -p` to send a slim copy of these files to the `~/experiments++/test` directory on Pangolin; doing so with `./update.sh -m` instead will upload them to MEGLtower. If you want to send your files to a location other than `~`, change the value of `REMOTEROOT` in your remote configuration files.

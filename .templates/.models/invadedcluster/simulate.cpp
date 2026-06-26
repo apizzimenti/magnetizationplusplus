@@ -56,6 +56,8 @@ int main(int argc, char* argv[]) {
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
+	using State = models::InvadedClusterState;
+
 	for (models::InvadedClusterState* state : M.simulate<models::InvadedClusterState>()) {
 		spins.rows[t] = state->cochain;
 		occupancy[t] = (float)state->includes.size()/(float)C.Cells[params.dimension];
