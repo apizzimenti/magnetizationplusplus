@@ -54,13 +54,27 @@ std::string getOsName()
 }
 
 
+auto ttcDays(std::chrono::duration<double> duration) {
+	const auto days = std::chrono::duration_cast<std::chrono::days>(duration);
+	const auto hours = std::chrono::duration_cast<std::chrono::hours>(duration-days);
+	const auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration-days-hours);
+	const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration-days-hours-minutes);
+
+	return std::make_tuple(days, hours, minutes, seconds);
+}
+
+
 std::string estimatedTTC(std::chrono::time_point<std::chrono::system_clock> start, int t, int N) {
 	auto now = std::chrono::high_resolution_clock::now();
-	const std::chrono::duration<double> _elapsed{now-start};
-	const std::chrono::duration<double> _estimated{((now-start)/t)*N};
 
-	std::string elapsed = std::format("{}d:{:%Hh:%Mm:%Ss}", std::chrono::duration_cast<std::chrono::days>(_elapsed).count(), _elapsed);
-	std::string estimated = std::format("{}d:{:%Hh:%Mm:%Ss}", std::chrono::duration_cast<std::chrono::days>(_estimated).count(), _estimated);
+	const std::chrono::duration<double> _elapsed{now-start};
+	const auto [elapseddays, elapsedhours, elapsedminutes, elapsedseconds] = ttcDays(_elapsed);
+
+	const std::chrono::duration<double> _estimated{((now-start)/t)*N};
+	const auto [estimateddays, estimatedhours, estimatedminutes, estimatedseconds] = ttcDays(_estimated);
+
+	std::string elapsed = std::format("{}d:{:02}h:{:02}m:{:02}s", elapseddays.count(), elapsedhours.count(), elapsedminutes.count(), elapsedseconds.count());
+	std::string estimated = std::format("{}d:{:02}h:{:02}m:{:02}s", estimateddays.count(), estimatedhours.count(), estimatedminutes.count(), estimatedseconds.count());	
 
 	return std::format("{}/{}", t, N) + " ———— " + elapsed + " ———— " + estimated + "\r";
 }
