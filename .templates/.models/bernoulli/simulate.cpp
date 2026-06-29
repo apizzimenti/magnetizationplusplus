@@ -10,8 +10,11 @@
 using namespace ATEAMS;
 using namespace std;
 
-// For ease-of-use.
-typedef statistics::Chain<models::Bernoulli> Chain;
+using Cubical = complexes::Cubical;
+using Parameters = models::BernoulliParameters;
+using Model = models::Bernoulli;
+using State = models::BernoulliState;
+using Chain = statistics::Chain<Model>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -38,27 +41,26 @@ int main(int argc, char* argv[]) {
 
 	// Construct a cubical complex.
 	vector<int> corners(TOPDIMENSION, SCALE);
-	complexes::Cubical C(corners, true);
+	Cubical COMPLEX(corners, true);
 
 	// Parametrize + initialize the model.
-	models::BernoulliParameters params;
-	params.p = 0.5;
-	params.dimension = PLAQUETTEDIMENSION;
+	Parameters PARAMETERS;
+	PARAMETERS.p = 0.5;
+	PARAMETERS.dimension = PLAQUETTEDIMENSION;
 
-	models::Bernoulli G(&C, params);
+	Model MODEL(&COMPLEX, PARAMETERS);
+	Chain CHAIN(&MODEL, N);
 
-	// Create the chain and data storage buckets.
-	Chain M(&G, N);
-
+	// Data storage.
 	vector<float> occupancy(N);
 	vector<int> rank(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
-	for (models::BernoulliState* state : M.simulate<models::BernoulliState>()) {
-		occupancy[t] = (double)state->includes.size()/(double)C.Cells[params.dimension];
-		rank[t] = state->rank;
+	for (State* STATE : CHAIN.simulate<State>()) {
+		occupancy[t] = (double)STATE->includes.size()/(double)COMPLEX.Cells[PARAMETERS.dimension];
+		rank[t] = STATE->rank;
 		t++;
 
 		// Fake a progress bar.
@@ -76,8 +78,8 @@ int main(int argc, char* argv[]) {
 	writer.write(rank, std::format("output/tape/{}/{}.txt", TIMESTAMP, "rank"));
 
 	// Add the parameters we care about to the metadata.
-	META.MODEL = G.kind;
-	META.PARAMETERS["DENSITY"] = params.p;
+	META.MODEL = MODEL.kind;
+	META.PARAMETERS["DENSITY"] = PARAMETERS.p;
 	META.PARAMETERS["TOPDIMENSION"] = TOPDIMENSION;
 	META.PARAMETERS["PLAQUETTEDIMENSION"] = PLAQUETTEDIMENSION;
 	META.PARAMETERS["SCALE"] = SCALE;

@@ -10,8 +10,11 @@
 using namespace ATEAMS;
 using namespace std;
 
-// For ease-of-use.
-typedef statistics::Chain<models::InvasionPercolation> Chain;
+using Cubical = complexes::Cubical;
+using Parameters = models::InvasionParameters;
+using Model = models::Invasion;
+using State = models::InvasionState;
+using Chain = statistics::Chain<Model>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -38,27 +41,25 @@ int main(int argc, char* argv[]) {
 
 	// Construct a cubical complex.
 	vector<int> corners(TOPDIMENSION, SCALE);
-	complexes::Cubical C(corners, true);
+	Cubical COMPLEX(corners, true);
 
 	// Parametrize + initialize the model.
-	models::InvasionPercolationParameters params;
-	params.field = 2;
-	params.stoppingFunction = arithmetic::stopInvadingAt({3,4});
+	Parameters PARAMETERS;
+	PARAMETERS.field = 2;
+	PARAMETERS.stoppingFunction = statistics::stopInvadingAt({3,4});
+	PARAMETERS.dimension = PLAQUETTEDIMENSION;
 
-	models::InvasionPercolation G(&C, params);
+	Model MODEL(&COMPLEX, PARAMETERS);
+	Chain CHAIN(&MODEL, N);
 
-	// Create the chain and data storage buckets.
-	Chain M(&G, N);
-
+	// Data storage.
 	vector<float> occupancy(N);
-	vector<int> rank(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
-	for (models::InvasionPercolationState* state : M.simulate<models::InvasionPercolationState>()) {
-		occupancy[t] = (double)state->includes.size()/(double)C.Cells[params.dimension];
-		rank[t] = state->rank;
+	for (State* STATE : CHAIN.simulate<State>()) {
+		// occupancy[t] = (double)STATE->includes.size()/(double)COMPLEX.Cells[PARAMETERS.dimension];
 		t++;
 
 		// Fake a progress bar.
@@ -74,11 +75,10 @@ int main(int argc, char* argv[]) {
 	ATEAMS::DataWriter writer;
 
 	writer.write(occupancy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "occupancy"));
-	writer.write(rank, std::format("output/tape/{}/{}.txt", TIMESTAMP, "rank"));
 
 	// Add the parameters we care about to the metadata.
-	META.MODEL = G.kind;
-	META.PARAMETERS["DENSITY"] = params.p;
+	META.MODEL = MODEL.kind;
+	META.PARAMETERS["FIELD"] = PARAMETERS.field;
 	META.PARAMETERS["TOPDIMENSION"] = TOPDIMENSION;
 	META.PARAMETERS["PLAQUETTEDIMENSION"] = PLAQUETTEDIMENSION;
 	META.PARAMETERS["SCALE"] = SCALE;

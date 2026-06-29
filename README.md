@@ -32,7 +32,7 @@ Creating a streamlined workflow for designing and executing experiments using [A
 
 	* [`InvadedCluster`](https://apizzimenti.github.io/ATEAMSplusplus/class_a_t_e_a_m_s_1_1models_1_1_invaded_cluster.html)
 	* [`SwendsenWang`](https://apizzimenti.github.io/ATEAMSplusplus/class_a_t_e_a_m_s_1_1models_1_1_swendsen_wang.html)
-	* [`InvasionPercolation`](https://apizzimenti.github.io/ATEAMSplusplus/class_a_t_e_a_m_s_1_1models_1_1_invasion_percolation.html)
+	* [`Invasion`](https://apizzimenti.github.io/ATEAMSplusplus/class_a_t_e_a_m_s_1_1models_1_1_invasion.html)
 	* [`Bernoulli`](https://apizzimenti.github.io/ATEAMSplusplus/class_a_t_e_a_m_s_1_1models_1_1_bernoulli.html)
 	* [`Glauber`](https://apizzimenti.github.io/ATEAMSplusplus/class_a_t_e_a_m_s_1_1models_1_1_glauber.html)
 
@@ -61,12 +61,12 @@ Creating a streamlined workflow for designing and executing experiments using [A
 	
 	```c++
 	vector<int> corners(TOPDIMENSION, SCALE);	// creating a cubical complex
-	complexes::Cubical C(corners, true);
+	Cubical COMPLEX(corners, true);
 
-	models::InvadedClusterParameters params;	// parametrizing the model
-	params.field = 2;
-	params.stoppingFunction = arithmetic::stopInvadingAt({3,4});
-	params.dimension = PLAQUETTEDIMENSION;
+	Parameters PARAMETERS;	// parametrizing the model
+	PARAMETERS.field = 2;
+	PARAMETERS.stoppingFunction = statistics::stopInvadingAt({3,4});
+	PARAMETERS.dimension = PLAQUETTEDIMENSION;
 	```
 
 	For more info on configuring each Model, [read the documentation](https://apizzimenti.github.io/ATEAMSplusplus/namespace_a_t_e_a_m_s_1_1models.html); each Model has a default set of parameters. **As of now, most Models fail silently; if you forget a parameter that does not have a default value, the Model will not warn you.**
@@ -80,11 +80,11 @@ Creating a streamlined workflow for designing and executing experiments using [A
 
 	using State = models::InvadedClusterState;
 
-	for (State* state : M.simulate<State>()) {
+	for (State* STATE : M.simulate<State>()) {
 		...
 
-		spins.rows[t] = state->cochain;	// keep the same type
-		occupancy[t] = (float)state->includes.size()/(float)C.Cells[params.dimension]; // transform!
+		spins.rows[t] = STATE->cochain;	// keep the same type
+		occupancy[t] = (float)STATE->includes.size()/(float)C.Cells[params.dimension]; // transform!
 		t++;
 
 		...

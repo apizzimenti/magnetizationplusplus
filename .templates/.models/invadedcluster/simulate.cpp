@@ -10,8 +10,11 @@
 using namespace ATEAMS;
 using namespace std;
 
-// For ease-of-use.
-typedef statistics::Chain<models::InvadedCluster> Chain;
+using Cubical = complexes::Cubical;
+using Parameters = models::InvadedClusterParameters;
+using Model = models::InvadedCluster;
+using State = models::InvadedClusterState;
+using Chain = statistics::Chain<Model>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -37,30 +40,27 @@ int main(int argc, char* argv[]) {
 
 	// Construct a cubical complex.
 	vector<int> corners(TOPDIMENSION, SCALE);
-	complexes::Cubical C(corners, true);
+	Cubical COMPLEX(corners, true);
 
 	// Parametrize + initialize the model.
-	models::InvadedClusterParameters params;
-	params.field = 2;
-	params.stoppingFunction = arithmetic::stopInvadingAt({3,4});
-	params.dimension = PLAQUETTEDIMENSION;
+	Parameters PARAMETERS;
+	PARAMETERS.field = 2;
+	PARAMETERS.stoppingFunction = statistics::stopInvadingAt({3,4});
+	PARAMETERS.dimension = PLAQUETTEDIMENSION;
 
-	models::InvadedCluster IC(&C, params);
+	Model MODEL(&COMPLEX, PARAMETERS);
+	Chain CHAIN(&MODEL, N);
 
-	// Create the chain and data storage buckets.
-	Chain M(&IC, N);
-
-	ZpMatrix spins(N, C.Cells[params.dimension-1]);
+	// Data storage.
+	ZpMatrix spins(N, COMPLEX.Cells[PARAMETERS.dimension-1]);
 	vector<float> occupancy(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
-	using State = models::InvadedClusterState;
-
-	for (models::InvadedClusterState* state : M.simulate<models::InvadedClusterState>()) {
-		spins.rows[t] = state->cochain;
-		occupancy[t] = (float)state->includes.size()/(float)C.Cells[params.dimension];
+	for (State* STATE : CHAIN.simulate<State>()) {
+		spins.rows[t] = STATE->cochain;
+		occupancy[t] = (float)STATE->includes.size()/(float)COMPLEX.Cells[PARAMETERS.dimension];
 		t++;
 
 		// Fake a progress bar.
@@ -79,8 +79,8 @@ int main(int argc, char* argv[]) {
 	writer.write(occupancy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "occupancy"));
 
 	// Add the parameters we care about to the metadata.
-	META.MODEL = IC.kind;
-	META.PARAMETERS["FIELD"] = params.field;
+	META.MODEL = MODEL.kind;
+	META.PARAMETERS["FIELD"] = PARAMETERS.field;
 	META.PARAMETERS["TOPDIMENSION"] = TOPDIMENSION;
 	META.PARAMETERS["PLAQUETTEDIMENSION"] = PLAQUETTEDIMENSION;
 	META.PARAMETERS["SCALE"] = SCALE;

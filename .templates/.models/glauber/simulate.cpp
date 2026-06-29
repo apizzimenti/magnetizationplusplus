@@ -10,8 +10,11 @@
 using namespace ATEAMS;
 using namespace std;
 
-// For ease-of-use.
-typedef statistics::Chain<models::Glauber> Chain;
+using Cubical = complexes::Cubical;
+using Parameters = models::GlauberParameters;
+using Model = models::Glauber;
+using State = models::GlauberState;
+using Chain = statistics::Chain<Model>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -37,28 +40,27 @@ int main(int argc, char* argv[]) {
 
 	// Construct a cubical complex.
 	vector<int> corners(TOPDIMENSION, SCALE);
-	complexes::Cubical C(corners, true);
+	Cubical COMPLEX(corners, true);
 
 	// Parametrize + initialize the model.
-	models::GlauberParameters params;
-	params.field = 2;
-	params.temperatureFunction = statistics::selfdual(params.field);
-	params.dimension = PLAQUETTEDIMENSION;
+	Parameters PARAMETERS;
+	PARAMETERS.field = 2;
+	PARAMETERS.temperatureFunction = statistics::selfdual(PARAMETERS.field);
+	PARAMETERS.dimension = PLAQUETTEDIMENSION;
 
-	models::Glauber G(&C, params);
+	Model MODEL(&COMPLEX, PARAMETERS);
+	Chain CHAIN(&MODEL, N);
 
-	// Create the chain and data storage buckets.
-	Chain M(&G, N);
-
-	ZpMatrix spins(N, C.Cells[params.dimension-1]);
+	// Data storage.
+	ZpMatrix spins(N, COMPLEX.Cells[PARAMETERS.dimension-1]);
 	vector<float> energy(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
-	for (models::GlauberState* state : M.simulate<models::GlauberState>()) {
-		spins.rows[t] = state->cochain;
-		energy[t] = (int)state->energy;
+	for (State* STATE : CHAIN.simulate<State>()) {
+		spins.rows[t] = STATE->cochain;
+		energy[t] = (int)STATE->energy;
 		t++;
 
 		// Fake a progress bar.
@@ -76,8 +78,8 @@ int main(int argc, char* argv[]) {
 	writer.write(energy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "energy"));
 
 	// Add the parameters we care about to the metadata.
-	META.MODEL = G.kind;
-	META.PARAMETERS["FIELD"] = params.field;
+	META.MODEL = MODEL.kind;
+	META.PARAMETERS["FIELD"] = PARAMETERS.field;
 	META.PARAMETERS["TOPDIMENSION"] = TOPDIMENSION;
 	META.PARAMETERS["PLAQUETTEDIMENSION"] = PLAQUETTEDIMENSION;
 	META.PARAMETERS["SCALE"] = SCALE;
