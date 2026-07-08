@@ -10,11 +10,11 @@
 using namespace ATEAMS;
 using namespace std;
 
-using Cubical = complexes::Cubical;
-using Parameters = models::BernoulliParameters;
+using Cubical = complexes::Cubical<ATEAMS::ff>;
+using Parameters = models::ModelParameters;
 using Model = models::Bernoulli;
-using State = models::BernoulliState;
-using Chain = statistics::Chain<Model>;
+using State = models::ModelState<ATEAMS::ff,ATEAMS::DenseVector>;
+using Chain = statistics::Chain<ATEAMS::ff,ATEAMS::DenseVector>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -58,9 +58,9 @@ int main(int argc, char* argv[]) {
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
-	for (State* STATE : CHAIN.simulate<State>()) {
-		occupancy[t] = (double)STATE->includes.size()/(double)COMPLEX.Cells[PARAMETERS.dimension];
-		rank[t] = STATE->rank;
+	for (State STATE : CHAIN.simulate()) {
+		occupancy[t] = (double)STATE.includes.size()/(double)COMPLEX.Cells[PARAMETERS.dimension];
+		rank[t] = STATE.rank;
 		t++;
 
 		// Fake a progress bar.

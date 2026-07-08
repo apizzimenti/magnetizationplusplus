@@ -10,11 +10,11 @@
 using namespace ATEAMS;
 using namespace std;
 
-using Cubical = complexes::Cubical;
-using Parameters = models::InvasionParameters;
+using Cubical = complexes::Cubical<ATEAMS::ff>;
+using Parameters = models::ModelParameters;
 using Model = models::Invasion;
-using State = models::InvasionState;
-using Chain = statistics::Chain<Model>;
+using State = models::ModelState<ATEAMS::ff,ATEAMS::DenseVector>;
+using Chain = statistics::Chain<ATEAMS::ff,ATEAMS::DenseVector>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
-	for (State* STATE : CHAIN.simulate<State>()) {
+	for (State STATE : CHAIN.simulate()) {
 		// occupancy[t] = (double)STATE->includes.size()/(double)COMPLEX.Cells[PARAMETERS.dimension];
 		t++;
 

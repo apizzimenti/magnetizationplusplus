@@ -10,11 +10,11 @@
 using namespace ATEAMS;
 using namespace std;
 
-using Cubical = complexes::Cubical;
-using Parameters = models::SwendsenWangParameters;
-using Model = models::SwendsenWang;
-using State = models::SwendsenWangState;
-using Chain = statistics::Chain<Model>;
+using Cubical = complexes::Cubical<ATEAMS::ff>;
+using Parameters = models::ModelParameters;
+using Model = models::SwendsenWang<ATEAMS::ff>;
+using State = models::ModelState<ATEAMS::ff,ATEAMS::SparseVector>;
+using Chain = statistics::Chain<ATEAMS::ff,ATEAMS::SparseVector>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -49,18 +49,18 @@ int main(int argc, char* argv[]) {
 	PARAMETERS.dimension = PLAQUETTEDIMENSION;
 
 	Model MODEL(&COMPLEX, PARAMETERS);
-	Chain M(&MODEL, N);
+	Chain CHAIN(&MODEL, N);
 
 	// Data storage.
-	ZpMatrix spins(N, COMPLEX.Cells[PARAMETERS.dimension-1]);
+	SparseMatrix<ATEAMS::ff> spins(N, COMPLEX.Cells[PARAMETERS.dimension-1]);
 	vector<float> occupancy(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
-	for (State* STATE : M.simulate<State>()) {
-		spins.rows[t] = STATE->cochain;
-		occupancy[t] = (float)STATE->includes.size()/(float)COMPLEX.Cells[PARAMETERS.dimension];
+	for (State STATE : CHAIN.simulate()) {
+		spins.rows[t] = STATE.cochain;
+		occupancy[t] = (float)STATE.includes.size()/(float)COMPLEX.Cells[PARAMETERS.dimension];
 		t++;
 
 		// Fake a progress bar.
