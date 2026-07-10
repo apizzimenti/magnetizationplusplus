@@ -10,11 +10,12 @@
 using namespace ATEAMS;
 using namespace std;
 
-using Cubical = complexes::Cubical<ATEAMS::ff>;
+using Model = models::Invasion<Zp>;
 using Parameters = models::ModelParameters;
-using Model = models::Invasion;
-using State = models::ModelState<ATEAMS::ff,ATEAMS::DenseVector>;
-using Chain = statistics::Chain<ATEAMS::ff,ATEAMS::DenseVector>;
+
+using Cubical = complexes::Cubical<Model::RingType>;
+using State = models::ModelState<Model::RingType,Model::VectorType>;
+using Chain = statistics::Chain<Model::RingType,Model::VectorType>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -43,9 +44,11 @@ int main(int argc, char* argv[]) {
 	vector<int> corners(TOPDIMENSION, SCALE);
 	Cubical COMPLEX(corners, true);
 
+	Model::RingType RR(2);
+
 	// Parametrize + initialize the model.
 	Parameters PARAMETERS;
-	PARAMETERS.field = 2;
+	PARAMETERS.coefficients = &RR;
 	PARAMETERS.stoppingFunction = statistics::stopInvadingAt({3,4});
 	PARAMETERS.dimension = PLAQUETTEDIMENSION;
 
@@ -59,7 +62,7 @@ int main(int argc, char* argv[]) {
 	auto start = chrono::high_resolution_clock::now();
 
 	for (State STATE : CHAIN.simulate()) {
-		// occupancy[t] = (double)STATE->includes.size()/(double)COMPLEX.Cells[PARAMETERS.dimension];
+		occupancy[t] = (double)STATE.includes.size()/(double)COMPLEX.Cells[PARAMETERS.dimension];
 		t++;
 
 		// Fake a progress bar.
@@ -77,8 +80,8 @@ int main(int argc, char* argv[]) {
 	writer.write(occupancy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "occupancy"));
 
 	// Add the parameters we care about to the metadata.
-	META.MODEL = MODEL.kind;
-	META.PARAMETERS["FIELD"] = PARAMETERS.field;
+	META.MODEL = MODEL.name;
+	META.PARAMETERS["FIELD"] = PARAMETERS.coefficients->characteristic;
 	META.PARAMETERS["TOPDIMENSION"] = TOPDIMENSION;
 	META.PARAMETERS["PLAQUETTEDIMENSION"] = PLAQUETTEDIMENSION;
 	META.PARAMETERS["SCALE"] = SCALE;

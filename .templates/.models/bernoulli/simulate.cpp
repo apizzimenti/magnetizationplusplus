@@ -10,11 +10,12 @@
 using namespace ATEAMS;
 using namespace std;
 
-using Cubical = complexes::Cubical<ATEAMS::ff>;
-using Parameters = models::ModelParameters;
 using Model = models::Bernoulli;
-using State = models::ModelState<ATEAMS::ff,ATEAMS::DenseVector>;
-using Chain = statistics::Chain<ATEAMS::ff,ATEAMS::DenseVector>;
+using Parameters = models::ModelParameters;
+
+using Cubical = complexes::Cubical<Model::RingType>;
+using State = models::ModelState<Model::RingType,Model::VectorType>;
+using Chain = statistics::Chain<Model::RingType,Model::VectorType>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -78,7 +79,7 @@ int main(int argc, char* argv[]) {
 	writer.write(rank, std::format("output/tape/{}/{}.txt", TIMESTAMP, "rank"));
 
 	// Add the parameters we care about to the metadata.
-	META.MODEL = MODEL.kind;
+	META.MODEL = MODEL.name;
 	META.PARAMETERS["DENSITY"] = PARAMETERS.p;
 	META.PARAMETERS["TOPDIMENSION"] = TOPDIMENSION;
 	META.PARAMETERS["PLAQUETTEDIMENSION"] = PLAQUETTEDIMENSION;

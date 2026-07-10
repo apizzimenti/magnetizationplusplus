@@ -24,7 +24,7 @@ clean:
 	@$(RM) simulate *.o
 
 build: clean
-	@g++-15 simulate.cpp `pkg-config --libs --cflags ATEAMS++` $(tbb) -o simulate
+	@$(CXX) simulate.cpp `pkg-config --libs --cflags ATEAMS++` $(tbb) -o simulate
 
 test: reset-simulations
 	@printf "cleaning and building on %s %s..." "$(OS)" "$(etc)"

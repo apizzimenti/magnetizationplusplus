@@ -10,11 +10,12 @@
 using namespace ATEAMS;
 using namespace std;
 
-using Cubical = complexes::Cubical<ATEAMS::ff>;
+using Model = models::Glauber<Zp>;
 using Parameters = models::ModelParameters;
-using Model = models::SwendsenWang<ATEAMS::ff>;
-using State = models::ModelState<ATEAMS::ff,ATEAMS::SparseVector>;
-using Chain = statistics::Chain<ATEAMS::ff,ATEAMS::SparseVector>;
+
+using Cubical = complexes::Cubical<Model::RingType>;
+using State = models::ModelState<Model::RingType,Model::VectorType>;
+using Chain = statistics::Chain<Model::RingType,Model::VectorType>;
 
 int main(int argc, char* argv[]) {
 	// cmd
@@ -42,17 +43,19 @@ int main(int argc, char* argv[]) {
 	vector<int> corners(TOPDIMENSION, SCALE);
 	Cubical COMPLEX(corners, true);
 
+	Model::RingType RR(2);
+
 	// Parametrize + initialize the model.
 	Parameters PARAMETERS;
-	PARAMETERS.field = 2;
-	PARAMETERS.temperatureFunction = statistics::selfdual(PARAMETERS.field);
+	PARAMETERS.coefficients = &RR;
+	PARAMETERS.temperatureFunction = statistics::selfdual(&RR);
 	PARAMETERS.dimension = PLAQUETTEDIMENSION;
 
 	Model MODEL(&COMPLEX, PARAMETERS);
 	Chain CHAIN(&MODEL, N);
 
 	// Data storage.
-	SparseMatrix<ATEAMS::ff> spins(N, COMPLEX.Cells[PARAMETERS.dimension-1]);
+	SparseMatrix<Model::RingType> spins(N, COMPLEX.Cells[PARAMETERS.dimension-1]);
 	vector<float> energy(N);
 
 	int t=0;
@@ -78,8 +81,8 @@ int main(int argc, char* argv[]) {
 	writer.write(energy, std::format("output/tape/{}/{}.txt", TIMESTAMP, "energy"));
 
 	// Add the parameters we care about to the metadata.
-	META.MODEL = MODEL.kind;
-	META.PARAMETERS["FIELD"] = PARAMETERS.field;
+	META.MODEL = MODEL.name;
+	META.PARAMETERS["FIELD"] = PARAMETERS.coefficients->characteristic;
 	META.PARAMETERS["TOPDIMENSION"] = TOPDIMENSION;
 	META.PARAMETERS["PLAQUETTEDIMENSION"] = PLAQUETTEDIMENSION;
 	META.PARAMETERS["SCALE"] = SCALE;
