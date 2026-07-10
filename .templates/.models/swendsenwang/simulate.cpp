@@ -56,14 +56,14 @@ int main(int argc, char* argv[]) {
 
 	// Data storage.
 	SparseMatrix<Model::RingType> spins(N, COMPLEX.Cells[PARAMETERS.dimension-1]);
-	vector<float> occupancy(N);
+	vector<double> occupancy(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
 
 	for (State STATE : CHAIN.simulate()) {
 		spins.rows[t] = STATE.cochain;
-		occupancy[t] = (float)STATE.includes.size()/(float)COMPLEX.Cells[PARAMETERS.dimension];
+		occupancy[t] = (double)STATE.includes.size()/(double)COMPLEX.Cells[PARAMETERS.dimension];
 		t++;
 
 		// Fake a progress bar.

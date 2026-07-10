@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 	Chain CHAIN(&MODEL, N);
 
 	// Data storage.
-	vector<float> occupancy(N);
+	vector<double> occupancy(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();

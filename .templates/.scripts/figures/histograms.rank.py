@@ -33,7 +33,7 @@ for STAMP in STAMPS:
 
 	# Give all bar heights.
 	X = np.arange(0, RANK+1)
-	Y = np.zeros(RANK+1, dtype=float)
+	Y = np.zeros(RANK+1, dtype=double)
 	for t in range(values.shape[0]): Y[values[t]] = bars[t]/N
 	
 	# Create the plot.

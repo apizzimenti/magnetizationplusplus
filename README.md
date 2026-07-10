@@ -75,7 +75,7 @@ Creating a streamlined workflow for designing and executing experiments using [A
 
 	```c++
 	SparseMatrix<Model::RingType> spins(N, C.Cells[params.dimension-1]);
-	vector<float> occupancy(N);
+	vector<double> occupancy(N);
 	int t=0;
 
 	using State = models::ModelState<Model::RingType,Model::VectorType>;
@@ -84,7 +84,7 @@ Creating a streamlined workflow for designing and executing experiments using [A
 		...
 
 		spins.rows[t] = STATE.cochain;	// keep the same type
-		occupancy[t] = (float)STATE.includes.size()/(float)C.Cells[params.dimension]; // transform!
+		occupancy[t] = (double)STATE.includes.size()/(double)C.Cells[params.dimension]; // transform!
 		t++;
 
 		...

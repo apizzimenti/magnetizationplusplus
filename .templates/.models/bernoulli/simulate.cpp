@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
 	Chain CHAIN(&MODEL, N);
 
 	// Data storage.
-	vector<float> occupancy(N);
+	vector<double> occupancy(N);
 	vector<int> rank(N);
 
 	int t=0;

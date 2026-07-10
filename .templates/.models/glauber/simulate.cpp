@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 
 	// Data storage.
 	SparseMatrix<Model::RingType> spins(N, COMPLEX.Cells[PARAMETERS.dimension-1]);
-	vector<float> energy(N);
+	vector<double> energy(N);
 
 	int t=0;
 	auto start = chrono::high_resolution_clock::now();
