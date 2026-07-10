@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 
 	// Construct a cubical complex.
 	vector<int> corners(TOPDIMENSION, SCALE);
-	Cubical COMPLEX(corners, true);
+	Cubical COMPLEX(corners);
 
 	Model::RingType RR(2);
 
