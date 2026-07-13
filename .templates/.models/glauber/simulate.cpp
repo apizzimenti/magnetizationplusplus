@@ -14,8 +14,8 @@ using Model = models::Glauber<Zp>;
 using Parameters = models::ModelParameters;
 
 using Cubical = complexes::Cubical<Model::RingType>;
-using State = models::ModelState<Model::RingType,Model::VectorType>;
-using Chain = statistics::Chain<Model::RingType,Model::VectorType>;
+using Chain = statistics::Chain<Model>;
+using State = Chain::State;
 
 int main(int argc, char* argv[]) {
 	// cmd
