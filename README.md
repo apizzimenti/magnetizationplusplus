@@ -1,7 +1,7 @@
 
 ## What's this repository for?
 
-Creating a streamlined workflow for designing and executing experiments using [ATEAMS++](https://github.com/apizzimenti/ATEAMSplusplus) on remote machines — specifically, [GMU ORC's Hopper high-performance compute cluster](https://wiki.orc.gmu.edu/mkdocs/Hopper_Quick_Start_Guide/), our Lab's Pangolin workstation, or [MEGL](https://megl.science.gmu.edu/)'s MEGLtower workstation. **This workflow is currently compatible with ATEAMS++ version 1.7.**
+Creating a streamlined workflow for designing and executing experiments using [ATEAMS++](https://github.com/apizzimenti/ATEAMSplusplus) on remote machines — specifically, [GMU ORC's Hopper high-performance compute cluster](https://wiki.orc.gmu.edu/mkdocs/Hopper_Quick_Start_Guide/), our Lab's Pangolin workstation, or [MEGL](https://megl.science.gmu.edu/)'s MEGLtower workstation. **This workflow is currently compatible with ATEAMS++ version 1.8.**
 
 ## How do I use it?
 
